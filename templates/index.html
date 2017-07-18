@@ -1,0 +1,22 @@
+{{ template "base-head" . }}
+<div>
+{{ range .Ctx }}
+
+    <div class="list-item">
+        <a href="{{ .URL }}">
+            <div class="story">
+                <h3>{{ .Title }}</h3>
+                <div class="host">{{ .DisplayURL }}</div>
+            </div>
+        </a>
+        <a href="/comments/?id={{ .ID }}">
+            <aside>
+                <div class="comment-count">{{ .Descendants }}</div>
+                <div class="score">{{ .Score }}</div>
+            </aside>
+        </a>
+    </div>
+
+{{end}}
+</div>
+{{ template "base-tail" . }}

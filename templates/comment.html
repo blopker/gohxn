@@ -1,0 +1,35 @@
+{{ define "child" }}
+    {{ if .HTML }}
+        <div class="js-comment comment">
+            <div class="js-author author">{{ .By }}</div>
+            <div class="text">{{ .HTML }}</div>
+            {{ template "children" .KidItems }}
+        </div>
+    {{ end }}
+{{ end }}
+
+{{ define "children" }}
+    {{ if . }}
+        <div className="children">
+            {{range .}}
+                {{ template "child" .}}
+            {{ end }}
+        </div>
+    {{else}}{{end}}
+{{ end }}
+
+{{ template "base-head" . }}
+    <div>
+        <div class="comment-header">
+            <h3>{{ .Ctx.Title }}</h3>
+            <a href={{ .Ctx.URL }}>{{ .Ctx.URL }}</a>
+            <div class="comment-header-author">By: {{ .Ctx.By }}</div>
+            <div class="text">{{ .Ctx.HTML }}</div>
+        </div>
+        <div class="comments">
+            {{ range .Ctx.KidItems }}
+                {{ template "child" .}}
+            {{ end }}
+        </div>
+    </div>
+{{ template "base-tail" . }}
