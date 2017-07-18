@@ -4,8 +4,11 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
+
+	"fmt"
 
 	"github.com/blopker/hxn/api"
 )
@@ -62,5 +65,11 @@ func main() {
 	http.Handle("/favicon.ico", static)
 	http.HandleFunc("/comments/", commentHandler)
 	http.HandleFunc("/", indexHandler)
-	log.Fatal(http.ListenAndServe(":12345", nil))
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "12345"
+	}
+	fmt.Println("Running on port: " + port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
