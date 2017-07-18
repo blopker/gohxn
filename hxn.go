@@ -36,27 +36,47 @@ func check(err error) {
 func commentHandler(w http.ResponseWriter, req *http.Request) {
 	sid, ok := req.URL.Query()["id"]
 	if !ok {
-		log.Fatal(ok)
+		http.Error(w, "id must be present", 500)
+		return
 	}
 	id, err := strconv.Atoi(sid[0])
-	check(err)
+	if err != nil {
+		http.Error(w, "id must be a int", 500)
+		return
+	}
+	comment, err := api.GetComments(id)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	ctx := page{
 		Title:      "Comments",
 		StaticBase: strings.TrimSuffix(staticDir, "/"),
-		Ctx:        api.GetComments(id),
+		Ctx:        comment,
 	}
 	err = templates.ExecuteTemplate(w, "comment.html", ctx)
-	check(err)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 }
 
 func indexHandler(w http.ResponseWriter, req *http.Request) {
+	stories, err := api.GetStories()
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 	ctx := page{
 		Title:      "Stories",
 		StaticBase: strings.TrimSuffix(staticDir, "/"),
-		Ctx:        api.GetStories(),
+		Ctx:        stories,
 	}
-	err := templates.ExecuteTemplate(w, "index.html", ctx)
-	check(err)
+	err = templates.ExecuteTemplate(w, "index.html", ctx)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
 }
 
 func main() {

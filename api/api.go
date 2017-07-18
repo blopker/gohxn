@@ -33,20 +33,20 @@ type Item struct {
 	HTML       template.HTML
 }
 
-func getItem(id int) Item {
+func getItem(id int) (Item, error) {
 	resp, err := http.Get(fmt.Sprintf("https://hacker-news.firebaseio.com/v0/item/%d.json", id))
 	if err != nil {
-		panic(err)
+		return Item{}, err
 	}
 	sresp, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	var item Item
 	err = json.Unmarshal(sresp, &item)
 	if err != nil {
-		panic(err)
+		return Item{}, err
 	}
 	createItem(&item)
-	return item
+	return item, nil
 }
 
 func createItem(item *Item) {
@@ -71,35 +71,37 @@ func createItem(item *Item) {
 }
 
 // GetComments get them
-func GetComments(id int) Item {
-	item := getItem(id)
-
+func GetComments(id int) (Item, error) {
+	item, err := getItem(id)
+	if err != nil {
+		return Item{}, err
+	}
 	var wg sync.WaitGroup
 	kids := make([]Item, len(item.Kids))
 	for i, k := range item.Kids {
 		wg.Add(1)
 		go func(id int, index int) {
 			defer wg.Done()
-			kids[index] = GetComments(id)
+			kids[index], err = GetComments(id)
 		}(k, i)
 	}
 	wg.Wait()
 	item.KidItems = kids
-	return item
+	return item, nil
 }
 
 // GetStories get them
-func GetStories() []Item {
+func GetStories() ([]Item, error) {
 	resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json")
 	if err != nil {
-		panic(err)
+		return []Item{}, err
 	}
 	sresp, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	var storyIDs []int
 	err = json.Unmarshal(sresp, &storyIDs)
 	if err != nil {
-		panic(err)
+		return []Item{}, err
 	}
 
 	var wg sync.WaitGroup
@@ -108,9 +110,9 @@ func GetStories() []Item {
 		wg.Add(1)
 		go func(id int, index int) {
 			defer wg.Done()
-			stories[index] = getItem(id)
+			stories[index], err = getItem(id)
 		}(v, i)
 	}
 	wg.Wait()
-	return stories
+	return stories, nil
 }
