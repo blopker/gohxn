@@ -10,6 +10,12 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+
+	"github.com/r3labs/sse"
+)
+
+var (
+	topStories []Item
 )
 
 // Item is item
@@ -33,7 +39,12 @@ type Item struct {
 	HTML       template.HTML
 }
 
-func getItem(id int) (Item, error) {
+type storiesEvent struct {
+	Path string `json:"path"`
+	IDs  []int  `json:"data"`
+}
+
+func fetchItem(id int) (Item, error) {
 	resp, err := http.Get(fmt.Sprintf("https://hacker-news.firebaseio.com/v0/item/%d.json", id))
 	if err != nil {
 		return Item{}, err
@@ -70,9 +81,48 @@ func createItem(item *Item) {
 	}
 }
 
-// GetComments get them
-func GetComments(id int) (Item, error) {
-	item, err := getItem(id)
+func processStoryIDs(ids []int) ([]Item, error) {
+	var err error
+	var wg sync.WaitGroup
+	stories := make([]Item, len(ids))
+	for i, v := range ids {
+		wg.Add(1)
+		go func(id int, index int) {
+			defer wg.Done()
+			stories[index], err = fetchComments(id)
+		}(v, i)
+	}
+	wg.Wait()
+	return stories, err
+}
+
+// Listen for changes
+func Listen() {
+	client := sse.NewClient("https://hacker-news.firebaseio.com/v0/topstories.json")
+	fmt.Println("API Listening...")
+	client.Subscribe("messages", func(msg *sse.Event) {
+		if msg.Data == nil {
+			return
+		}
+		var event storiesEvent
+		err := json.Unmarshal(msg.Data, &event)
+		if err != nil {
+			return
+		}
+		if len(event.IDs) < 30 {
+			return
+		}
+		stories, err := processStoryIDs(event.IDs[:30])
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		topStories = stories
+	})
+}
+
+func fetchComments(id int) (Item, error) {
+	item, err := fetchItem(id)
 	if err != nil {
 		return Item{}, err
 	}
@@ -82,7 +132,7 @@ func GetComments(id int) (Item, error) {
 		wg.Add(1)
 		go func(id int, index int) {
 			defer wg.Done()
-			kids[index], err = GetComments(id)
+			kids[index], err = fetchComments(id)
 		}(k, i)
 	}
 	wg.Wait()
@@ -90,29 +140,17 @@ func GetComments(id int) (Item, error) {
 	return item, nil
 }
 
+// GetComments get them
+func GetComments(id int) (Item, error) {
+	for _, item := range topStories {
+		if item.ID == id {
+			return item, nil
+		}
+	}
+	return fetchComments(id)
+}
+
 // GetStories get them
 func GetStories() ([]Item, error) {
-	resp, err := http.Get("https://hacker-news.firebaseio.com/v0/topstories.json")
-	if err != nil {
-		return []Item{}, err
-	}
-	sresp, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	var storyIDs []int
-	err = json.Unmarshal(sresp, &storyIDs)
-	if err != nil {
-		return []Item{}, err
-	}
-
-	var wg sync.WaitGroup
-	stories := make([]Item, 30)
-	for i, v := range storyIDs[:30] {
-		wg.Add(1)
-		go func(id int, index int) {
-			defer wg.Done()
-			stories[index], err = getItem(id)
-		}(v, i)
-	}
-	wg.Wait()
-	return stories, nil
+	return topStories, nil
 }

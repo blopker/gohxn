@@ -1,14 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
-
-	"fmt"
 
 	"github.com/blopker/hxn/api"
 )
@@ -80,6 +79,7 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	go api.Listen()
 	static := http.StripPrefix(staticDir, http.FileServer(http.Dir("assets")))
 	http.Handle(staticDir, static)
 	http.Handle("/favicon.ico", static)
