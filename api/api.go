@@ -11,6 +11,8 @@ import (
 	"strings"
 	"sync"
 
+	"time"
+
 	"github.com/r3labs/sse"
 )
 
@@ -98,27 +100,33 @@ func processStoryIDs(ids []int) ([]Item, error) {
 
 // Listen for changes
 func Listen() {
-	client := sse.NewClient("https://hacker-news.firebaseio.com/v0/topstories.json")
 	fmt.Println("API Listening...")
-	client.Subscribe("messages", func(msg *sse.Event) {
-		if msg.Data == nil {
-			return
-		}
-		var event storiesEvent
-		err := json.Unmarshal(msg.Data, &event)
-		if err != nil {
-			return
-		}
-		if len(event.IDs) < 30 {
-			return
-		}
-		stories, err := processStoryIDs(event.IDs[:30])
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		topStories = stories
-	})
+	var err error
+	for {
+		client := sse.NewClient("https://hacker-news.firebaseio.com/v0/topstories.json")
+		client.Subscribe("messages", func(msg *sse.Event) {
+			if msg.Data == nil {
+				return
+			}
+			var event storiesEvent
+			err = json.Unmarshal(msg.Data, &event)
+			if err != nil {
+				return
+			}
+			if len(event.IDs) < 30 {
+				return
+			}
+			stories, err := processStoryIDs(event.IDs[:30])
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			topStories = stories
+		})
+		log.Println("API listener error! Sleeping before retry.")
+		log.Println(err)
+		time.Sleep(10 * time.Second)
+	}
 }
 
 func fetchComments(id int) (Item, error) {
