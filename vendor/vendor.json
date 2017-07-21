@@ -10,7 +10,6 @@
 		}
 	],
 	"heroku": {
-		"goVersion": "1.8",
 		"install": ["."]
 	},
 	"rootPath": "github.com/blopker/hxn"
