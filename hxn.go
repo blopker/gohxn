@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -12,12 +13,10 @@ import (
 	"github.com/blopker/hxn/api"
 )
 
-const (
-	staticDir = "/static/"
-)
-
 var (
-	templates = template.Must(template.ParseGlob("templates/*.html"))
+	templates    = template.Must(template.ParseGlob("templates/*.html"))
+	randomBase   = rand.Int()
+	isProduction = strings.ToLower(os.Getenv("ENVIRONMENT")) == "production"
 )
 
 type page struct {
@@ -30,6 +29,13 @@ func check(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func staticBase() string {
+	if isProduction {
+		return fmt.Sprintf("/static-%d", randomBase)
+	}
+	return "/static-RANDOM"
 }
 
 func commentHandler(w http.ResponseWriter, req *http.Request) {
@@ -50,7 +56,7 @@ func commentHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	ctx := page{
 		Title:      "Comments",
-		StaticBase: strings.TrimSuffix(staticDir, "/"),
+		StaticBase: staticBase(),
 		Ctx:        comment,
 	}
 	err = templates.ExecuteTemplate(w, "comment.html", ctx)
@@ -68,7 +74,7 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	}
 	ctx := page{
 		Title:      "Stories",
-		StaticBase: strings.TrimSuffix(staticDir, "/"),
+		StaticBase: staticBase(),
 		Ctx:        stories,
 	}
 	err = templates.ExecuteTemplate(w, "index.html", ctx)
@@ -78,9 +84,21 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func addCacheHeader(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if isProduction {
+			w.Header().Add("Cache-Control", "public, max-age=31104000")
+		} else {
+			w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
+		}
+		h.ServeHTTP(w, r)
+	}
+}
+
 func main() {
 	go api.Listen()
-	static := http.StripPrefix(staticDir, http.FileServer(http.Dir("assets")))
+	staticDir := staticBase() + "/"
+	static := addCacheHeader(http.StripPrefix(staticDir, http.FileServer(http.Dir("assets"))))
 	http.Handle(staticDir, static)
 	http.Handle("/favicon.ico", static)
 	http.HandleFunc("/comments/", commentHandler)
