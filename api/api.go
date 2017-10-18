@@ -69,15 +69,18 @@ func createItem(item *Item) {
 	if item.URL == "" {
 		item.URL = fmt.Sprintf("https://news.ycombinator.com/item?id=%d", item.ID)
 	}
+
 	parsedURL, err := url.Parse(item.URL)
 	if err != nil {
-		log.Fatal(err)
-	}
-	if strings.HasPrefix(parsedURL.Host, "github.com") {
-		item.DisplayURL = parsedURL.Host + parsedURL.Path
+		item.DisplayURL = item.URL
 	} else {
-		item.DisplayURL = parsedURL.Host
+		if strings.HasPrefix(parsedURL.Host, "github.com") {
+			item.DisplayURL = parsedURL.Host + parsedURL.Path
+		} else {
+			item.DisplayURL = parsedURL.Host
+		}
 	}
+
 	if item.Text != "" {
 		item.HTML = template.HTML(item.Text)
 	}
