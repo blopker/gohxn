@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blopker/hxn/api"
+	"github.com/blopker/gohxn/api"
 )
 
 var (

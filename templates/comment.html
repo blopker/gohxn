@@ -22,7 +22,7 @@
     <div>
         <div class="comment-header">
             <h3>{{ .Ctx.Title }}</h3>
-            <a href={{ .Ctx.URL }}>{{ .Ctx.URL }}</a>
+            <a href={{ .Ctx.URL }}>{{ .Ctx.DisplayURLLong }}</a>
             <div class="comment-header-author">By: {{ .Ctx.By }}</div>
             <div class="text">{{ .Ctx.HTML }}</div>
         </div>

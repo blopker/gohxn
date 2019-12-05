@@ -1,5 +1,5 @@
 run:
-	@go run hxn.go
+	@go run gohxn.go
 
 deploy:
 	@git push dokku master

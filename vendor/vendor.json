@@ -1,16 +1,16 @@
 {
-	"comment": "",
-	"ignore": "test",
-	"package": [
-		{
-			"checksumSHA1": "jmeYXN66ApeO83c5q3y38eIVEUk=",
-			"path": "github.com/r3labs/sse",
-			"revision": "c1b6318327b2118737a5b69d1e9325ddf26720df",
-			"revisionTime": "2017-07-06T17:32:24Z"
-		}
-	],
-	"heroku": {
-		"install": ["."]
-	},
-	"rootPath": "github.com/blopker/hxn"
+  "comment": "",
+  "ignore": "test",
+  "package": [
+    {
+      "checksumSHA1": "jmeYXN66ApeO83c5q3y38eIVEUk=",
+      "path": "github.com/r3labs/sse",
+      "revision": "c1b6318327b2118737a5b69d1e9325ddf26720df",
+      "revisionTime": "2017-07-06T17:32:24Z"
+    }
+  ],
+  "heroku": {
+    "install": ["."]
+  },
+  "rootPath": "github.com/blopker/gohxn"
 }

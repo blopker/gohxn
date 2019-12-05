@@ -36,9 +36,10 @@ type Item struct {
 	Title       string `json:"title"`
 	Descendants int    `json:"descendants"`
 
-	DisplayURL string
-	KidItems   []Item
-	HTML       template.HTML
+	DisplayURL     string
+	DisplayURLLong string
+	KidItems       []Item
+	HTML           template.HTML
 }
 
 type storiesEvent struct {
@@ -74,8 +75,9 @@ func createItem(item *Item) {
 	if err != nil {
 		item.DisplayURL = item.URL
 	} else {
+		item.DisplayURLLong = parsedURL.Host + parsedURL.Path
 		if strings.HasPrefix(parsedURL.Host, "github.com") {
-			item.DisplayURL = parsedURL.Host + parsedURL.Path
+			item.DisplayURL = item.DisplayURLLong
 		} else {
 			item.DisplayURL = parsedURL.Host
 		}
