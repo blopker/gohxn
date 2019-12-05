@@ -20,7 +20,7 @@ body {
    font-weight: 300;
    word-wrap: break-word;
    background-color: #000;
-   color: #969696;
+   color: #ececec;
 }
 
 body > a {
@@ -28,7 +28,7 @@ body > a {
 }
 
 a {
-  color: #333;
+  color: #ececec;
 }
 
 p:last-of-type {
