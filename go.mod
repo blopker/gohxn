@@ -1,4 +1,4 @@
-// +heroku goVersion go1.15
+// +heroku goVersion go1.14
 module github.com/blopker/gohxn
 
 go 1.13
