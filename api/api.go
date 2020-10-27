@@ -13,7 +13,7 @@ import (
 
 	"time"
 
-	"github.com/r3labs/sse"
+	"github.com/r3labs/sse/v2"
 )
 
 var (
