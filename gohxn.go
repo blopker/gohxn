@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	templates    = template.Must(template.ParseGlob("templates/*.html"))
+	templates    = getTemplates()
 	randomBase   = rand.Int()
 	isProduction = strings.ToLower(os.Getenv("ENVIRONMENT")) == "production"
 )
@@ -38,6 +38,20 @@ func staticBase() string {
 	return "/static-RANDOM"
 }
 
+func getTemplates() *template.Template {
+	return template.Must(template.ParseGlob("templates/*.html"))
+}
+
+func execTemplate(writer http.ResponseWriter, name string, ctx page) error {
+	var tmpls *template.Template
+	if isProduction {
+		tmpls = templates
+	} else {
+		tmpls = getTemplates()
+	}
+	return tmpls.ExecuteTemplate(writer, name, ctx)
+}
+
 func commentHandler(w http.ResponseWriter, req *http.Request) {
 	sid, ok := req.URL.Query()["id"]
 	if !ok {
@@ -59,7 +73,7 @@ func commentHandler(w http.ResponseWriter, req *http.Request) {
 		StaticBase: staticBase(),
 		Ctx:        comment,
 	}
-	err = templates.ExecuteTemplate(w, "comment.html", ctx)
+	err = execTemplate(w, "comment.html", ctx)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -77,7 +91,7 @@ func indexHandler(w http.ResponseWriter, req *http.Request) {
 		StaticBase: staticBase(),
 		Ctx:        stories,
 	}
-	err = templates.ExecuteTemplate(w, "index.html", ctx)
+	err = execTemplate(w, "index.html", ctx)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -108,6 +122,6 @@ func main() {
 	if port == "" {
 		port = "12345"
 	}
-	fmt.Println("Running on port: " + port)
+	fmt.Println("Running on http://localhost:" + port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

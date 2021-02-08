@@ -1,21 +1,21 @@
 {{ define "child" }}
     {{ if .HTML }}
-        <div class="js-comment comment">
-            <div class="js-author author">{{ .By }}</div>
+        <details open class="comment">
+            <summary class="author">{{ .By }}</summary>
             <div class="text">{{ .HTML }}</div>
             {{ template "children" .KidItems }}
-        </div>
+        </details>
     {{ end }}
 {{ end }}
 
 {{ define "children" }}
     {{ if . }}
-        <div className="children">
+        <div class="children">
             {{range .}}
                 {{ template "child" .}}
             {{ end }}
         </div>
-    {{else}}{{end}}
+    {{end}}
 {{ end }}
 
 {{ template "base-head" . }}
