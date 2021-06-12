@@ -38,6 +38,7 @@ type Item struct {
 
 	DisplayURL     string
 	DisplayURLLong string
+	DisplayHNURL   string
 	KidItems       []Item
 	HTML           template.HTML
 }
@@ -67,8 +68,11 @@ func createItem(item *Item) {
 	if item == nil {
 		return
 	}
+
+	item.DisplayHNURL = fmt.Sprintf("https://news.ycombinator.com/item?id=%d", item.ID)
+
 	if item.URL == "" {
-		item.URL = fmt.Sprintf("https://news.ycombinator.com/item?id=%d", item.ID)
+		item.URL = item.DisplayHNURL
 	}
 
 	parsedURL, err := url.Parse(item.URL)
