@@ -1,4 +1,4 @@
-// +heroku goVersion go1.16
+// +heroku goVersion go1.17
 module github.com/blopker/gohxn
 
 go 1.16
