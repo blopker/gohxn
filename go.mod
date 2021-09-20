@@ -1,7 +1,7 @@
-// +heroku goVersion go1.17.1
+// +heroku goVersion go1.17
 module github.com/blopker/gohxn
 
-go 1.17.1
+go 1.17
 
 require (
 	github.com/r3labs/sse/v2 v2.3.3
